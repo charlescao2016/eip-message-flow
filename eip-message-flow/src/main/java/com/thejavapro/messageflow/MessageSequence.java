@@ -7,10 +7,6 @@ public class MessageSequence {
 	private int size = -1;
 	private boolean end = false;
 	
-	public MessageSequence() {
-		
-	}
-	
 	public MessageSequence(String sequenceID, int position) {
 		this.sequenceID = sequenceID;
 		this.position = position;
