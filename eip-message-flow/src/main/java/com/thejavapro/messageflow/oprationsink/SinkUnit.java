@@ -1,4 +1,4 @@
-package com.thejavapro.messageflow.aggregation;
+package com.thejavapro.messageflow.oprationsink;
 
 import org.apache.log4j.Logger;
 
@@ -6,17 +6,17 @@ import com.thejavapro.messageflow.interfaces.IMessageInput;
 import com.thejavapro.messageflow.interfaces.IMessageOutput;
 import com.thejavapro.messageflow.interfaces.IProcessingUnit;
 
-public class AggregationUnit<I, O> implements IProcessingUnit<I, O> {
+public class SinkUnit<I> implements IProcessingUnit<I, String> {
 
-	private static final Logger LOGGER = Logger.getLogger(AggregationUnit.class);
+	private static final Logger LOGGER = Logger.getLogger(SinkUnit.class);
 
 	public IMessageInput<I> getIMessageInput() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public IMessageOutput<O> getIMessageOutput() {
-		// TODO Auto-generated method stub
+	public IMessageOutput<String> getIMessageOutput() {
+		
 		return null;
 	}
 
@@ -29,5 +29,6 @@ public class AggregationUnit<I, O> implements IProcessingUnit<I, O> {
 		// TODO Auto-generated method stub
 		
 	}
+	
 	
 }

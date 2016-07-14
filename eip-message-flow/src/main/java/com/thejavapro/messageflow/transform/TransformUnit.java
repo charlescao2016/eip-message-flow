@@ -1,20 +1,23 @@
 package com.thejavapro.messageflow.transform;
 
-import com.thejavapro.messageflow.Message;
+import org.apache.log4j.Logger;
+
 import com.thejavapro.messageflow.interfaces.IMessageInput;
 import com.thejavapro.messageflow.interfaces.IMessageOutput;
 import com.thejavapro.messageflow.interfaces.IProcessingUnit;
 
-public class TransformUnit<I, O> implements IMessageInput<I>, IMessageOutput<O>, IProcessingUnit {
+public class TransformUnit<I, O> implements IProcessingUnit<I, O> {
 
-	public Message<O> take() {
+	private static final Logger LOGGER = Logger.getLogger(TransformUnit.class);
+
+	public IMessageInput<I> getIMessageInput() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void put(Message<I> message) {
+	public IMessageOutput<O> getIMessageOutput() {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 
 	public void start() {
@@ -26,5 +29,5 @@ public class TransformUnit<I, O> implements IMessageInput<I>, IMessageOutput<O>,
 		// TODO Auto-generated method stub
 		
 	}
-
+	
 }
