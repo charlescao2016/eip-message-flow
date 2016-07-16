@@ -2,7 +2,7 @@ package com.thejavapro.messageflow.interfaces;
 
 import com.thejavapro.messageflow.Message;
 
-public interface IMessageInput<I> {
+public interface ITransformTask<I, O> {
 
-	void put(Message<I> message);
+	 Message<O> doTask(Message<I> t);
 }

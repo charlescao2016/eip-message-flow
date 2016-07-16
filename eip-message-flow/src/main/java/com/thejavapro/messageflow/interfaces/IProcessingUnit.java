@@ -1,10 +1,17 @@
 package com.thejavapro.messageflow.interfaces;
 
-public interface IProcessingUnit<I, O> {
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
-	IMessageInput<I> getIMessageInput();
-	IMessageOutput<O> getIMessageOutput();
+import com.thejavapro.messageflow.Message;
+
+public interface IProcessingUnit<I, O> {
 	
-	void start();
-	void stop();
+	void put(Message<I> message) throws InterruptedException;
+	Message<O> take() throws InterruptedException;
+	void awaitPosionPill(boolean forAll) throws InterruptedException, ExecutionException;
+	void awaitTermination(long timeout, TimeUnit unit, boolean forAll) throws InterruptedException;
+	void shutdown(boolean all);
+	BlockingQueue<Message<I>> getInputQueue();
 }
