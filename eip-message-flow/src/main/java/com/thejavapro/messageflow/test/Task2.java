@@ -7,6 +7,10 @@ public class Task2 implements IOperationTask<String> {
 
 	public void doTask(Message<String> t) {
 		
+		long threadId = Thread.currentThread().getId();
+		String body = t.getBody();
+		System.out.println("Thread # " + threadId + " - Task2 start: " + t.getBody());
+		
 		try {
 			Thread.sleep(1000 * 1);
 		} catch (InterruptedException e) {
@@ -14,8 +18,8 @@ public class Task2 implements IOperationTask<String> {
 			e.printStackTrace();
 		}
 		
-		long threadId = Thread.currentThread().getId();
-		System.out.println("Thread # " + threadId + " - Task2 done. message: " + t.getBody());
+		t.setBody(body + "-task2");
+		System.out.println("Thread # " + threadId + " - Task2 done: " + t.getBody());
 	}
 
 }
