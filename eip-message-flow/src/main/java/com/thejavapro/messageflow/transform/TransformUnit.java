@@ -13,6 +13,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.thejavapro.messageflow.Message;
+import com.thejavapro.messageflow.consumer.PoisonPillEvent;
+import com.thejavapro.messageflow.interfaces.IPoisonPillEvent;
 import com.thejavapro.messageflow.interfaces.IProcessingUnit;
 import com.thejavapro.messageflow.interfaces.ITranformTaskFactory;
 
@@ -23,30 +25,29 @@ public class TransformUnit<I, O> implements IProcessingUnit<I, O> {
 	private final BlockingQueue<Message<I>> inputQueue;
 	private final BlockingQueue<Message<O>> outputQueue;
 	private final ExecutorService consumerPool;
-	private List<Future<Message<I>>> consumerPoolFutures = new ArrayList<Future<Message<I>>>();
+	private List<Future<Boolean>> consumerPoolFutures = new ArrayList<Future<Boolean>>();
 	private IProcessingUnit<O, ?> nextUnit = null;  
+
+	public TransformUnit(int consumerSize, ITranformTaskFactory<I, O> taskFactory, int inputQueueSize) {
+		
+		this(consumerSize, taskFactory, inputQueueSize, (BlockingQueue<Message<O>>)null);
+	}
 
 	public TransformUnit(int consumerSize, ITranformTaskFactory<I, O> taskFactory, int inputQueueSize, IProcessingUnit<O, ?> nextUnit) {
 		
-		this.inputQueue = new ArrayBlockingQueue<Message<I>>(inputQueueSize);
-		this.outputQueue = nextUnit.getInputQueue();
+		this(consumerSize, taskFactory, inputQueueSize, nextUnit.getInputQueue());
 		this.nextUnit = nextUnit;
-		
-		consumerPool = Executors.newFixedThreadPool(consumerSize);
-		for(int i = 0; i < consumerSize; i++) {
-			Future<Message<I>> future = consumerPool.submit(new Consumer<I, O>(inputQueue, outputQueue, taskFactory));
-			consumerPoolFutures.add(future);
-		}
 	}
 
-	public TransformUnit(int consumerSize, ITranformTaskFactory<I, O> taskFactory, int inputQueueSize, int outputQueueSize) {
+	public TransformUnit(int consumerSize, ITranformTaskFactory<I, O> taskFactory, int inputQueueSize, BlockingQueue<Message<O>> outputQueue) {
 		
 		this.inputQueue = new ArrayBlockingQueue<Message<I>>(inputQueueSize);
-		this.outputQueue = new ArrayBlockingQueue<Message<O>>(outputQueueSize);
+		this.outputQueue = outputQueue;
 		
+		IPoisonPillEvent poisonEvent = new PoisonPillEvent();
 		consumerPool = Executors.newFixedThreadPool(consumerSize);
 		for(int i = 0; i < consumerSize; i++) {
-			Future<Message<I>> future = consumerPool.submit(new Consumer<I, O>(inputQueue, outputQueue, taskFactory));
+			Future<Boolean> future = consumerPool.submit(new Consumer<I, O>(inputQueue, outputQueue, taskFactory, poisonEvent));
 			consumerPoolFutures.add(future);
 		}
 	}
@@ -63,12 +64,16 @@ public class TransformUnit<I, O> implements IProcessingUnit<I, O> {
 
 	public Message<O> take() throws InterruptedException {
 		
+		if (outputQueue == null) {
+			return null;
+		}
+		
 		return outputQueue.take();
 	}
 
 	public void awaitPosionPill(boolean forAll) throws InterruptedException, ExecutionException {
 		
-		for(Future<Message<I>> future : consumerPoolFutures) {
+		for(Future<Boolean> future : consumerPoolFutures) {
 			future.get();
 		}
 		

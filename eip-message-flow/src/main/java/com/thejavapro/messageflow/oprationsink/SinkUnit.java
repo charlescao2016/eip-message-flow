@@ -13,7 +13,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import com.thejavapro.messageflow.Message;
+import com.thejavapro.messageflow.consumer.PoisonPillEvent;
 import com.thejavapro.messageflow.interfaces.IOperationTaskFactory;
+import com.thejavapro.messageflow.interfaces.IPoisonPillEvent;
 import com.thejavapro.messageflow.interfaces.IProcessingUnit;
 
 public class SinkUnit<I> implements IProcessingUnit<I, String> {
@@ -22,15 +24,16 @@ public class SinkUnit<I> implements IProcessingUnit<I, String> {
 
 	private final BlockingQueue<Message<I>> inputQueue;
 	private final ExecutorService consumerPool;
-	private List<Future<Message<I>>> consumerPoolFutures = new ArrayList<Future<Message<I>>>();
+	private List<Future<Boolean>> consumerPoolFutures = new ArrayList<Future<Boolean>>();
 	
 	public SinkUnit(int consumerSize, IOperationTaskFactory<I> taskFactory, int inputQueueSize) {
 		
 		this.inputQueue = new ArrayBlockingQueue<Message<I>>(inputQueueSize);
 				
+		IPoisonPillEvent poisonEvent = new PoisonPillEvent();
 		consumerPool = Executors.newFixedThreadPool(consumerSize);
 		for(int i = 0; i < consumerSize; i++) {
-			Future<Message<I>> future = consumerPool.submit(new Consumer<I>(inputQueue, taskFactory));
+			Future<Boolean> future = consumerPool.submit(new Consumer<I>(inputQueue, taskFactory, poisonEvent));
 			consumerPoolFutures.add(future);
 		}
 	}
@@ -52,7 +55,7 @@ public class SinkUnit<I> implements IProcessingUnit<I, String> {
 
 	public void awaitPosionPill(boolean forAll) throws InterruptedException, ExecutionException {
 		
-		for(Future<Message<I>> future : consumerPoolFutures) {
+		for(Future<Boolean> future : consumerPoolFutures) {
 			future.get();
 		}
 	}

@@ -17,8 +17,10 @@ public class Main {
 		int inputQueueSize = 100;
 		ITranformTaskFactory<String, String> task1Factory = new Task1Factory();
 		IOperationTaskFactory<String> task2Factory = new Task2Factory();
+		ITranformTaskFactory<String, String> task3Factory = new Task3Factory();
 
-		IProcessingUnit<String, ?> v = new SinkUnit<String>(1, task2Factory, inputQueueSize);
+		//IProcessingUnit<String, ?> v = new SinkUnit<String>(1, task2Factory, inputQueueSize);
+		IProcessingUnit<String, ?> v = new TransformUnit<String, String>(1, task3Factory, inputQueueSize);
 		IProcessingUnit<String, String> u1 = new TransformUnit<String, String>(5, task1Factory, inputQueueSize, v);
 		//IProcessingUnit<String, String> u2 = new TransformUnit<String, String>(5, task1Factory, inputQueueSize, v);
 		
@@ -44,8 +46,11 @@ public class Main {
 	
 		
 		try {
+			System.out.println("awaitPosionPill");
 			u1.awaitPosionPill(true);
+			System.out.println("shutdown.");
 			u1.shutdown(true);
+			System.out.println("awaitTermination.");
 			u1.awaitTermination(5, TimeUnit.SECONDS, true);
 	
 		} catch (InterruptedException e) {
@@ -54,7 +59,7 @@ public class Main {
 		} catch (ExecutionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		} 
 		
 		System.out.println("exit.");
 	}
