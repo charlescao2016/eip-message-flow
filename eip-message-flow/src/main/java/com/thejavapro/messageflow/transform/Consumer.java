@@ -41,7 +41,7 @@ class Consumer<I, O> implements Callable<Boolean> {
 			try {
 				t = inputQueue.take();
 			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
+				//Thread.currentThread().interrupt();
 				return false;
 			}
 			
