@@ -17,23 +17,21 @@ class Consumer<I, O> implements Callable<Boolean> {
 	private final BlockingQueue<Message<I>> inputQueue;
 	private final BlockingQueue<Message<O>> outputQueue;
 	private final ITransformTask<I, O> task;
-	private IPoisonPillEvent poisonPillEvent;
 	
-	public Consumer(BlockingQueue<Message<I>> inputQueue, BlockingQueue<Message<O>> outputQueue, ITranformTaskFactory<I, O> taskFactory, IPoisonPillEvent poisonPillEvent) {
+	public Consumer(BlockingQueue<Message<I>> inputQueue, BlockingQueue<Message<O>> outputQueue, ITranformTaskFactory<I, O> taskFactory) {
 		
-		this(inputQueue, outputQueue, taskFactory.create(), poisonPillEvent);
+		this(inputQueue, outputQueue, taskFactory.create());
 	}
 
-	public Consumer(BlockingQueue<Message<I>> inputQueue, BlockingQueue<Message<O>> outputQueue, ITransformTask<I, O> task, IPoisonPillEvent poisonPillEvent) {
+	public Consumer(BlockingQueue<Message<I>> inputQueue, BlockingQueue<Message<O>> outputQueue, ITransformTask<I, O> task) {
 		this.inputQueue = inputQueue;
 		this.outputQueue = outputQueue;
 		this.task = task;
-		this.poisonPillEvent = poisonPillEvent;
 	}
 	
 	public Boolean call() throws Exception {
 		
-		poisonPillEvent.addConsumerThread(Thread.currentThread());
+		//poisonPillEvent.addConsumerThread(Thread.currentThread());
 		
 		while(true) {
 			
@@ -41,7 +39,7 @@ class Consumer<I, O> implements Callable<Boolean> {
 			try {
 				t = inputQueue.take();
 			} catch (InterruptedException e) {
-				//Thread.currentThread().interrupt();
+				Thread.currentThread().interrupt();
 				return false;
 			}
 			
@@ -51,7 +49,6 @@ class Consumer<I, O> implements Callable<Boolean> {
 			}
 			
 			if (t.isPoisonPill()){
-				poisonPillEvent.interruptOtherConsumers(Thread.currentThread());
 				return true;
 			}
 		}
