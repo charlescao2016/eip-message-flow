@@ -60,15 +60,6 @@ public class TransformUnit<I, O> implements IProcessingUnit<I, O> {
 		inputQueue.put(message);
 	}
 
-	public Message<O> take() throws InterruptedException {
-
-		if (outputQueue == null) {
-			return null;
-		}
-
-		return outputQueue.take();
-	}
-
 	public void awaitTermination(long timeout, TimeUnit unit, boolean forAll) throws InterruptedException {
 
 		consumerPool.awaitTermination(timeout, unit);
