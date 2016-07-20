@@ -1,6 +1,7 @@
 package com.thejavapro.messageflow.resequence;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import com.thejavapro.messageflow.Message;
@@ -36,6 +37,11 @@ public class ResequenceUnit<I> implements IProcessingUnit<I, I>{
 	public BlockingQueue<Message<I>> getInputQueue() {
 		
 		return transformUnit.getInputQueue();
+	}
+
+	public void gracefullyShutdown(boolean allNext) throws InterruptedException, ExecutionException {
+		
+		transformUnit.gracefullyShutdown(allNext);
 	}
 
 }

@@ -43,13 +43,14 @@ class Consumer<I, O> implements Callable<Boolean> {
 				return false;
 			}
 			
+			if (t.getBody() == null) {
+				System.out.println("poison pill.");
+				return true;
+			}
+			
 			Message<O> o = task.doTask(t);
 			if (outputQueue != null) {
 				outputQueue.put(o);
-			}
-			
-			if (t.isPoisonPill()){
-				return true;
 			}
 		}
 	}

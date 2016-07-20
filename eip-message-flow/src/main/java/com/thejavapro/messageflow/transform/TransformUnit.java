@@ -1,9 +1,9 @@
 package com.thejavapro.messageflow.transform;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -19,10 +19,11 @@ public class TransformUnit<I, O> implements IProcessingUnit<I, O> {
 
 	private static final Logger LOGGER = Logger.getLogger(TransformUnit.class);
 
+	private final int consumerSize;
 	private final BlockingQueue<Message<I>> inputQueue;
 	private final BlockingQueue<Message<O>> outputQueue;
 	private final ExecutorService consumerPool;
-	private List<Future<Boolean>> consumerPoolFutures = new ArrayList<Future<Boolean>>();
+	private ExecutorCompletionService<Boolean> completionService; 
 	private IProcessingUnit<O, ?> nextUnit = null;
 
 	public TransformUnit(int consumerSize, ITranformTaskFactory<I, O> taskFactory, int inputQueueSize) {
@@ -40,13 +41,14 @@ public class TransformUnit<I, O> implements IProcessingUnit<I, O> {
 	public TransformUnit(int consumerSize, ITranformTaskFactory<I, O> taskFactory, int inputQueueSize,
 			BlockingQueue<Message<O>> outputQueue) {
 
+		this.consumerSize = consumerSize;
 		this.inputQueue = new ArrayBlockingQueue<Message<I>>(inputQueueSize);
 		this.outputQueue = outputQueue;
 
 		consumerPool = Executors.newFixedThreadPool(consumerSize);
+		completionService = new ExecutorCompletionService<Boolean>(consumerPool);
 		for (int i = 0; i < consumerSize; i++) {
-			Future<Boolean> future = consumerPool.submit(new Consumer<I, O>(inputQueue, outputQueue, taskFactory));
-			consumerPoolFutures.add(future);
+			completionService.submit(new Consumer<I, O>(inputQueue, outputQueue, taskFactory));
 		}
 	}
 
@@ -70,11 +72,26 @@ public class TransformUnit<I, O> implements IProcessingUnit<I, O> {
 	}
 
 	public void shutdown(boolean all) {
-
+		
 		consumerPool.shutdown();
 
 		if (all && nextUnit != null) {
 			nextUnit.shutdown(all);
+		}
+	}
+
+	public void gracefullyShutdown(boolean allNext) throws InterruptedException, ExecutionException {
+
+		put(new Message<I>("", null));
+
+		for(int i = 0; i < consumerSize - 1; i++) {
+			Future<Boolean> future = completionService.take();
+			future.get();
+			put(new Message<I>("", null));
+		}
+
+		if (allNext && nextUnit != null) {
+			nextUnit.shutdown(allNext);
 		}
 	}
 

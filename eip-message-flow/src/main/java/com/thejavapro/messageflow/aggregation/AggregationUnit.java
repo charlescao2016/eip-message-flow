@@ -1,6 +1,7 @@
 package com.thejavapro.messageflow.aggregation;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -38,6 +39,11 @@ public class AggregationUnit<I, O> implements IProcessingUnit<I, O> {
 	}
 
 	public void shutdown(boolean all) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void gracefullyShutdown(boolean allNext) throws InterruptedException, ExecutionException {
 		// TODO Auto-generated method stub
 		
 	}
