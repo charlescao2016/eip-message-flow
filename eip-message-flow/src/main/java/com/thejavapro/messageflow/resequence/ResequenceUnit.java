@@ -6,8 +6,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import com.thejavapro.messageflow.Message;
+import com.thejavapro.messageflow.interfaces.IProcessingTaskFactory;
 import com.thejavapro.messageflow.interfaces.IProcessingUnit;
-import com.thejavapro.messageflow.interfaces.ITranformTaskFactory;
 import com.thejavapro.messageflow.process.ProcessUnit;
 
 public class ResequenceUnit<I> implements IProcessingUnit<I, I>{
@@ -16,7 +16,7 @@ public class ResequenceUnit<I> implements IProcessingUnit<I, I>{
 	
 	public ResequenceUnit(int inputQueueSize, BlockingQueue<Message<I>> outputQueue) {
 		
-		ITranformTaskFactory<I, I> factory = new ResequenceTaskFactory<I>();
+		IProcessingTaskFactory<I, I> factory = new ResequenceTaskFactory<I>();
 		processUnit = new ProcessUnit<I, I>(1, factory, inputQueueSize, outputQueue);
 	}
 

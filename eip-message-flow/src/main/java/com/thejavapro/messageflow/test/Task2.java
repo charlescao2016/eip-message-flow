@@ -1,9 +1,9 @@
 package com.thejavapro.messageflow.test;
 
 import com.thejavapro.messageflow.Message;
-import com.thejavapro.messageflow.interfaces.ITransformTask;
+import com.thejavapro.messageflow.interfaces.IProcessingTask;
 
-public class Task2 implements ITransformTask<String, String> {
+public class Task2 implements IProcessingTask<String, String> {
 
 	public Message<String> doTask(Message<String> t) {
 		

@@ -1,11 +1,11 @@
 package com.thejavapro.messageflow.test;
 
-import com.thejavapro.messageflow.interfaces.ITranformTaskFactory;
-import com.thejavapro.messageflow.interfaces.ITransformTask;
+import com.thejavapro.messageflow.interfaces.IProcessingTask;
+import com.thejavapro.messageflow.interfaces.IProcessingTaskFactory;
 
-public class Task1Factory implements ITranformTaskFactory<String, String> {
+public class Task1Factory implements IProcessingTaskFactory<String, String> {
 
-	public ITransformTask<String, String> create() {
+	public IProcessingTask<String, String> create() {
 		
 		return new Task1();
 	}

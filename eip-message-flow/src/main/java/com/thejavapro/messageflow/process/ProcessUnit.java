@@ -15,8 +15,9 @@ import java.util.concurrent.TimeoutException;
 import org.apache.log4j.Logger;
 
 import com.thejavapro.messageflow.Message;
+import com.thejavapro.messageflow.interfaces.IProcessingTaskFactory;
 import com.thejavapro.messageflow.interfaces.IProcessingUnit;
-import com.thejavapro.messageflow.interfaces.ITranformTaskFactory;
+
 
 public class ProcessUnit<I, O> implements IProcessingUnit<I, O> {
 
@@ -29,19 +30,19 @@ public class ProcessUnit<I, O> implements IProcessingUnit<I, O> {
 	private ExecutorCompletionService<Boolean> completionService; 
 	private IProcessingUnit<O, ?> nextUnit = null;
 
-	public ProcessUnit(int consumerSize, ITranformTaskFactory<I, O> taskFactory, int inputQueueSize) {
+	public ProcessUnit(int consumerSize, IProcessingTaskFactory<I, O> taskFactory, int inputQueueSize) {
 
 		this(consumerSize, taskFactory, inputQueueSize, (BlockingQueue<Message<O>>) null);
 	}
 
-	public ProcessUnit(int consumerSize, ITranformTaskFactory<I, O> taskFactory, int inputQueueSize,
+	public ProcessUnit(int consumerSize, IProcessingTaskFactory<I, O> taskFactory, int inputQueueSize,
 			IProcessingUnit<O, ?> nextUnit) {
 
 		this(consumerSize, taskFactory, inputQueueSize, nextUnit.getInputQueue());
 		this.nextUnit = nextUnit;
 	}
 
-	public ProcessUnit(int consumerSize, ITranformTaskFactory<I, O> taskFactory, int inputQueueSize,
+	public ProcessUnit(int consumerSize, IProcessingTaskFactory<I, O> taskFactory, int inputQueueSize,
 			BlockingQueue<Message<O>> outputQueue) {
 
 		this.consumerSize = consumerSize;

@@ -1,28 +1,42 @@
 package com.thejavapro.messageflow;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
-import com.thejavapro.messageflow.interfaces.IProcessingUnit;
+import com.thejavapro.messageflow.interfaces.ITaskManager;
 
-public class CompletionService<I, O> {
+public class CompletionService {
 
 	private static final Logger LOGGER = Logger.getLogger(CompletionService.class);
 
-	private List<IProcessingUnit<I, O>> processUnits; 
+	private List<ITaskManager> taskManagers = new ArrayList<ITaskManager>(); 
 	
-	public void add(IProcessingUnit<I, O> processUnit) {
-		processUnits.add(processUnit);
+	public void add(ITaskManager taskManager) {
+		taskManagers.add(taskManager);
 	}
 	
-	public void shutDown() throws InterruptedException, ExecutionException {
+	public void shutDown(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException {
 		
 		//processUnits.forEach((processUnit) -> processUnit.gracefullyShutdown(false));
 		
-		for (IProcessingUnit<I, O> processUnit : processUnits) {
-			processUnit.shutdownTasks(false);
+		for (ITaskManager taskManager : taskManagers) {
+			taskManager.shutdownTasks(false, timeout, unit);
+		}
+		
+		for (ITaskManager taskManager : taskManagers) {
+			taskManager.shutdown(false);
+		}
+		
+		for (ITaskManager taskManager : taskManagers) {
+			taskManager.awaitTermination(timeout / taskManagers.size(), unit, false);
+		}
+		
+		for (ITaskManager taskManager : taskManagers) {
+			taskManager.shutdownNow();
 		}
 	}
 }

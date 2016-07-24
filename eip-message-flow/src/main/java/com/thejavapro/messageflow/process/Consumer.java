@@ -6,8 +6,8 @@ import java.util.concurrent.Callable;
 import org.apache.log4j.Logger;
 
 import com.thejavapro.messageflow.Message;
-import com.thejavapro.messageflow.interfaces.ITranformTaskFactory;
-import com.thejavapro.messageflow.interfaces.ITransformTask;
+import com.thejavapro.messageflow.interfaces.IProcessingTask;
+import com.thejavapro.messageflow.interfaces.IProcessingTaskFactory;
 
 class Consumer<I, O> implements Callable<Boolean> {
 
@@ -15,14 +15,14 @@ class Consumer<I, O> implements Callable<Boolean> {
 	
 	private final BlockingQueue<Message<I>> inputQueue;
 	private final BlockingQueue<Message<O>> outputQueue;
-	private final ITransformTask<I, O> task;
+	private final IProcessingTask<I, O> task;
 	
-	public Consumer(BlockingQueue<Message<I>> inputQueue, BlockingQueue<Message<O>> outputQueue, ITranformTaskFactory<I, O> taskFactory) {
+	public Consumer(BlockingQueue<Message<I>> inputQueue, BlockingQueue<Message<O>> outputQueue, IProcessingTaskFactory<I, O> taskFactory) {
 		
 		this(inputQueue, outputQueue, taskFactory.create());
 	}
 
-	public Consumer(BlockingQueue<Message<I>> inputQueue, BlockingQueue<Message<O>> outputQueue, ITransformTask<I, O> task) {
+	public Consumer(BlockingQueue<Message<I>> inputQueue, BlockingQueue<Message<O>> outputQueue, IProcessingTask<I, O> task) {
 		this.inputQueue = inputQueue;
 		this.outputQueue = outputQueue;
 		this.task = task;
