@@ -1,5 +1,6 @@
 package com.thejavapro.messageflow.test;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -34,16 +35,12 @@ public class Main {
 			}
 		}
 		
-//		try {
-//			Thread.sleep(1000 * 10);
-//		} catch (InterruptedException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
+
 		
-		System.out.println("gracefullyShutdown.");
+		System.out.println("shutdownTasks.");
 		try {
-			u1.shutdownTasks(true);
+			//u1.shutdownTasks(true);
+			u1.shutdownTasks(true, 100, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -58,12 +55,20 @@ public class Main {
 		
 		System.out.println("awaitTermination.");
 		try {
-			u1.awaitTermination(5, TimeUnit.SECONDS, true);
+			u1.awaitTermination(1, TimeUnit.SECONDS, true);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
+		System.out.println("shutdown now.");
+		List<Runnable> remain = u1.shutdownNow();
+		System.out.println("u1: " + remain.size());
+		
+		System.out.println("shutdown now.");
+		List<Runnable> remain_v = v.shutdownNow();
+		System.out.println("v: " + remain_v.size());
+
 		System.out.println("exit.");
 	}
 

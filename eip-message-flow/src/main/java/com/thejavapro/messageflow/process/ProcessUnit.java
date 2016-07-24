@@ -98,10 +98,12 @@ public class ProcessUnit<I, O> implements IProcessingUnit<I, O> {
 
 		put(new Message<I>("", null));
 
-		for(int i = 0; i < consumerSize - 1; i++) {
+		for(int i = 0; i < consumerSize; i++) {
 			Future<Boolean> future = completionService.take();
 			future.get();
-			put(new Message<I>("", null));
+			if (i < consumerSize - 1) {
+				put(new Message<I>("", null));
+			}
 		}
 		
 		if (allNext && nextUnit != null) {
