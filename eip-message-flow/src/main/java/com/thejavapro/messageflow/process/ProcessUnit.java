@@ -1,13 +1,16 @@
-package com.thejavapro.messageflow.transform;
+package com.thejavapro.messageflow.process;
 
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
 
@@ -15,9 +18,9 @@ import com.thejavapro.messageflow.Message;
 import com.thejavapro.messageflow.interfaces.IProcessingUnit;
 import com.thejavapro.messageflow.interfaces.ITranformTaskFactory;
 
-public class TransformUnit<I, O> implements IProcessingUnit<I, O> {
+public class ProcessUnit<I, O> implements IProcessingUnit<I, O> {
 
-	private static final Logger LOGGER = Logger.getLogger(TransformUnit.class);
+	private static final Logger LOGGER = Logger.getLogger(ProcessUnit.class);
 
 	private final int consumerSize;
 	private final BlockingQueue<Message<I>> inputQueue;
@@ -26,19 +29,19 @@ public class TransformUnit<I, O> implements IProcessingUnit<I, O> {
 	private ExecutorCompletionService<Boolean> completionService; 
 	private IProcessingUnit<O, ?> nextUnit = null;
 
-	public TransformUnit(int consumerSize, ITranformTaskFactory<I, O> taskFactory, int inputQueueSize) {
+	public ProcessUnit(int consumerSize, ITranformTaskFactory<I, O> taskFactory, int inputQueueSize) {
 
 		this(consumerSize, taskFactory, inputQueueSize, (BlockingQueue<Message<O>>) null);
 	}
 
-	public TransformUnit(int consumerSize, ITranformTaskFactory<I, O> taskFactory, int inputQueueSize,
+	public ProcessUnit(int consumerSize, ITranformTaskFactory<I, O> taskFactory, int inputQueueSize,
 			IProcessingUnit<O, ?> nextUnit) {
 
 		this(consumerSize, taskFactory, inputQueueSize, nextUnit.getInputQueue());
 		this.nextUnit = nextUnit;
 	}
 
-	public TransformUnit(int consumerSize, ITranformTaskFactory<I, O> taskFactory, int inputQueueSize,
+	public ProcessUnit(int consumerSize, ITranformTaskFactory<I, O> taskFactory, int inputQueueSize,
 			BlockingQueue<Message<O>> outputQueue) {
 
 		this.consumerSize = consumerSize;
@@ -52,16 +55,19 @@ public class TransformUnit<I, O> implements IProcessingUnit<I, O> {
 		}
 	}
 
+	@Override
 	public BlockingQueue<Message<I>> getInputQueue() {
 
 		return inputQueue;
 	}
 
+	@Override
 	public void put(Message<I> message) throws InterruptedException {
 
 		inputQueue.put(message);
 	}
 
+	@Override
 	public void awaitTermination(long timeout, TimeUnit unit, boolean forAll) throws InterruptedException {
 
 		consumerPool.awaitTermination(timeout, unit);
@@ -71,16 +77,24 @@ public class TransformUnit<I, O> implements IProcessingUnit<I, O> {
 		}
 	}
 
-	public void shutdown(boolean all) {
+	@Override
+	public void shutdown(boolean allNext) {
 		
 		consumerPool.shutdown();
 
-		if (all && nextUnit != null) {
-			nextUnit.shutdown(all);
+		if (allNext && nextUnit != null) {
+			nextUnit.shutdown(allNext);
 		}
 	}
 
-	public void gracefullyShutdown(boolean allNext) throws InterruptedException, ExecutionException {
+	@Override
+	public List<Runnable> shutdownNow() {
+		
+		return consumerPool.shutdownNow();
+	}
+
+	@Override
+	public void shutdownTasks(boolean allNext) throws InterruptedException, ExecutionException {
 
 		put(new Message<I>("", null));
 
@@ -89,10 +103,32 @@ public class TransformUnit<I, O> implements IProcessingUnit<I, O> {
 			future.get();
 			put(new Message<I>("", null));
 		}
-
+		
 		if (allNext && nextUnit != null) {
-			nextUnit.shutdown(allNext);
-		}
+			nextUnit.shutdownTasks(allNext);
+		}	
 	}
 
+	@Override
+	public boolean shutdownTasks(boolean allNext, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException {
+		
+		ExecutorService executor = Executors.newCachedThreadPool();
+		Callable<Object> task = new Callable<Object>() {
+		   public Object call() throws InterruptedException, ExecutionException {
+		      shutdownTasks(allNext);
+		      return null;
+		   }
+		};
+		
+		Future<Object> future = executor.submit(task);
+		try {
+		   Object result = future.get(timeout, unit); 
+		} catch (TimeoutException ex) {
+		   return false;
+		} finally {
+		   executor.shutdownNow();
+		}
+		
+		return true;
+	}
 }

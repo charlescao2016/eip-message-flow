@@ -1,5 +1,6 @@
 package com.thejavapro.messageflow.resequence;
 
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -7,41 +8,59 @@ import java.util.concurrent.TimeUnit;
 import com.thejavapro.messageflow.Message;
 import com.thejavapro.messageflow.interfaces.IProcessingUnit;
 import com.thejavapro.messageflow.interfaces.ITranformTaskFactory;
-import com.thejavapro.messageflow.transform.TransformUnit;
+import com.thejavapro.messageflow.process.ProcessUnit;
 
 public class ResequenceUnit<I> implements IProcessingUnit<I, I>{
 
-	private IProcessingUnit<I, I> transformUnit;
+	private IProcessingUnit<I, I> processUnit;
 	
 	public ResequenceUnit(int inputQueueSize, BlockingQueue<Message<I>> outputQueue) {
 		
 		ITranformTaskFactory<I, I> factory = new ResequenceTaskFactory<I>();
-		transformUnit = new TransformUnit<I, I>(1, factory, inputQueueSize, outputQueue);
+		processUnit = new ProcessUnit<I, I>(1, factory, inputQueueSize, outputQueue);
 	}
 
+	@Override
 	public void put(Message<I> message) throws InterruptedException {
 		
-		transformUnit.put(message);
+		processUnit.put(message);
 	}
 
+	@Override
 	public void awaitTermination(long timeout, TimeUnit unit, boolean forAll) throws InterruptedException {
 		
-		transformUnit.awaitTermination(timeout, unit, forAll);
+		processUnit.awaitTermination(timeout, unit, forAll);
 	}
 
+	@Override
 	public void shutdown(boolean all) {
 		
-		transformUnit.shutdown(all);
+		processUnit.shutdown(all);
 	}
 
+	@Override
 	public BlockingQueue<Message<I>> getInputQueue() {
 		
-		return transformUnit.getInputQueue();
+		return processUnit.getInputQueue();
 	}
 
-	public void gracefullyShutdown(boolean allNext) throws InterruptedException, ExecutionException {
+	@Override
+	public void shutdownTasks(boolean allNext) throws InterruptedException, ExecutionException {
+		// TODO Auto-generated method stub
 		
-		transformUnit.gracefullyShutdown(allNext);
+	}
+
+	@Override
+	public boolean shutdownTasks(boolean allNext, long timeout, TimeUnit unit)
+			throws InterruptedException, ExecutionException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public List<Runnable> shutdownNow() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

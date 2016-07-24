@@ -1,4 +1,4 @@
-package com.thejavapro.messageflow.transform;
+package com.thejavapro.messageflow.process;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -6,7 +6,6 @@ import java.util.concurrent.Callable;
 import org.apache.log4j.Logger;
 
 import com.thejavapro.messageflow.Message;
-import com.thejavapro.messageflow.interfaces.IPoisonPillEvent;
 import com.thejavapro.messageflow.interfaces.ITranformTaskFactory;
 import com.thejavapro.messageflow.interfaces.ITransformTask;
 

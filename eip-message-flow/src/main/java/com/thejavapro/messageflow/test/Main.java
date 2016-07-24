@@ -1,11 +1,12 @@
 package com.thejavapro.messageflow.test;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import com.thejavapro.messageflow.Message;
 import com.thejavapro.messageflow.interfaces.IProcessingUnit;
 import com.thejavapro.messageflow.interfaces.ITranformTaskFactory;
-import com.thejavapro.messageflow.transform.TransformUnit;
+import com.thejavapro.messageflow.process.ProcessUnit;
 
 public class Main {
 
@@ -15,8 +16,8 @@ public class Main {
 		ITranformTaskFactory<String, String> task2Factory = new Task2Factory();
 		ITranformTaskFactory<String, String> task3Factory = new Task3Factory();
 
-		IProcessingUnit<String, ?> v = new TransformUnit<String, String>(1, task3Factory, 1);
-		IProcessingUnit<String, String> u1 = new TransformUnit<String, String>(5, task1Factory, 100, v);
+		IProcessingUnit<String, ?> v = new ProcessUnit<String, String>(1, task3Factory, 1);
+		IProcessingUnit<String, String> u1 = new ProcessUnit<String, String>(5, task1Factory, 100, v);
 		//IProcessingUnit<String, String> u2 = new TransformUnit<String, String>(5, task2Factory, 100, v);
 		
 		for(int i = 0; i < 10; i++) {
@@ -33,23 +34,35 @@ public class Main {
 			}
 		}
 		
-		try {
-			Thread.sleep(1000 * 10);
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+//		try {
+//			Thread.sleep(1000 * 10);
+//		} catch (InterruptedException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
 		
+		System.out.println("gracefullyShutdown.");
+		try {
+			u1.shutdownTasks(true);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		System.out.println("shutdown.");
 		u1.shutdown(true);
+
 		
-//		System.out.println("awaitTermination.");
-//		try {
-//			u1.awaitTermination(5, TimeUnit.SECONDS, true);
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		System.out.println("awaitTermination.");
+		try {
+			u1.awaitTermination(5, TimeUnit.SECONDS, true);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		System.out.println("exit.");
 	}
