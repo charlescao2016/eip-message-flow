@@ -23,37 +23,45 @@ public class ProcessUnit<I, O> implements IProcessingUnit<I, O> {
 
 	private static final Logger LOGGER = Logger.getLogger(ProcessUnit.class);
 
+	private final IProcessingTaskFactory<I, O> taskFactory;
 	private final int consumerSize;
 	private final BlockingQueue<Message<I>> inputQueue;
-	private final BlockingQueue<Message<O>> outputQueue;
-	private final ExecutorService consumerPool;
-	private ExecutorCompletionService<Boolean> completionService; 
+	
+	private ExecutorService consumerPool;
+	private BlockingQueue<Message<O>> outputQueue = null;
 	private IProcessingUnit<O, ?> nextUnit = null;
+
+	private ExecutorCompletionService<Boolean> completionService;
+	
 
 	public ProcessUnit(int consumerSize, IProcessingTaskFactory<I, O> taskFactory, int inputQueueSize) {
 
-		this(consumerSize, taskFactory, inputQueueSize, (BlockingQueue<Message<O>>) null);
-	}
-
-	public ProcessUnit(int consumerSize, IProcessingTaskFactory<I, O> taskFactory, int inputQueueSize,
-			IProcessingUnit<O, ?> nextUnit) {
-
-		this(consumerSize, taskFactory, inputQueueSize, nextUnit.getInputQueue());
-		this.nextUnit = nextUnit;
-	}
-
-	public ProcessUnit(int consumerSize, IProcessingTaskFactory<I, O> taskFactory, int inputQueueSize,
-			BlockingQueue<Message<O>> outputQueue) {
-
+		this.taskFactory = taskFactory;
 		this.consumerSize = consumerSize;
 		this.inputQueue = new ArrayBlockingQueue<Message<I>>(inputQueueSize);
-		this.outputQueue = outputQueue;
+	}
 
+	@Override
+	public void start() {
+		
 		consumerPool = Executors.newFixedThreadPool(consumerSize);
 		completionService = new ExecutorCompletionService<Boolean>(consumerPool);
 		for (int i = 0; i < consumerSize; i++) {
 			completionService.submit(new Consumer<I, O>(inputQueue, outputQueue, taskFactory));
 		}
+	}
+
+	@Override
+	public void addOutputQueue(BlockingQueue<Message<O>> outputQueue) {
+		
+		this.outputQueue = outputQueue;
+	}
+
+	@Override
+	public void addOutputUnit(IProcessingUnit<O, ?> next) {
+		
+		this.nextUnit = next;
+		this.outputQueue = next.getInputQueue();
 	}
 
 	@Override

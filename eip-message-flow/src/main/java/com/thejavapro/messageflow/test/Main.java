@@ -18,12 +18,14 @@ public class Main {
 		IProcessingTaskFactory<String, String> task3Factory = new Task3Factory();
 
 		IProcessingUnit<String, ?> v = new ProcessUnit<String, String>(1, task3Factory, 1);
-		IProcessingUnit<String, String> u1 = new ProcessUnit<String, String>(5, task1Factory, 100, v);
+		IProcessingUnit<String, String> u1 = new ProcessUnit<String, String>(5, task1Factory, 100);
 		//IProcessingUnit<String, String> u2 = new TransformUnit<String, String>(5, task2Factory, 100, v);
+		u1.addOutputUnit(v);
+		v.start();
+		u1.start();
 		
 		CompletionService cs = new CompletionService();
-		cs.add(u1);
-		cs.add(v);
+		cs.add(u1).add(v);
 		
 		for(int i = 0; i < 10; i++) {
 			try {

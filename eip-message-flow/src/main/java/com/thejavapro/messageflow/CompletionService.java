@@ -15,8 +15,14 @@ public class CompletionService {
 
 	private List<ITaskManager> taskManagers = new ArrayList<ITaskManager>(); 
 	
-	public void add(ITaskManager taskManager) {
+	public CompletionService add(ITaskManager taskManager) {
 		taskManagers.add(taskManager);
+		
+		return this;
+	}
+	
+	public void start() {
+		
 	}
 	
 	public void shutDown(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException {

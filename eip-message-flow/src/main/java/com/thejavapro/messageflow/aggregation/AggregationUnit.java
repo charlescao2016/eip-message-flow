@@ -56,5 +56,23 @@ public class AggregationUnit<I, O> implements IProcessingUnit<I, O> {
 		return null;
 	}
 
+	@Override
+	public void addOutputQueue(BlockingQueue<Message<O>> outputQueue) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addOutputUnit(IProcessingUnit<O, ?> next) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void start() {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 }

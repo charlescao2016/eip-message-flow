@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 public interface ITaskManager {
 	
+	void start();
 	void shutdownTasks(boolean allNext) throws InterruptedException, ExecutionException;
 	boolean shutdownTasks(boolean allNext, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException;
 	void shutdown(boolean allNext);
