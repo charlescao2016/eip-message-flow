@@ -18,7 +18,6 @@ public class ResequenceUnit<I> implements IProcessingUnit<I, I>{
 		
 		IProcessingTaskFactory<I, I> factory = new ResequenceTaskFactory<I>();
 		processUnit = new ProcessUnit<I, I>(1, factory, inputQueueSize);
-		
 	}
 
 	@Override
@@ -47,39 +46,38 @@ public class ResequenceUnit<I> implements IProcessingUnit<I, I>{
 
 	@Override
 	public void shutdownTasks(boolean allNext) throws InterruptedException, ExecutionException {
-		// TODO Auto-generated method stub
 		
+		processUnit.shutdownTasks(allNext);
 	}
 
 	@Override
-	public boolean shutdownTasks(boolean allNext, long timeout, TimeUnit unit)
-			throws InterruptedException, ExecutionException {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean shutdownTasks(boolean allNext, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException {
+		
+		return processUnit.shutdownTasks(allNext, timeout, unit);
 	}
 
 	@Override
 	public List<Runnable> shutdownNow() {
-		// TODO Auto-generated method stub
-		return null;
+
+		return processUnit.shutdownNow();
 	}
 
 	@Override
 	public void addOutputQueue(BlockingQueue<Message<I>> outputQueue) {
-		// TODO Auto-generated method stub
-		
+
+		processUnit.addOutputQueue(outputQueue);		
 	}
 
 	@Override
 	public void addOutputUnit(IProcessingUnit<I, ?> next) {
-		// TODO Auto-generated method stub
-		
+
+		processUnit.addOutputUnit(next);
 	}
 
 	@Override
 	public void start() {
-		// TODO Auto-generated method stub
-		
+
+		processUnit.start();
 	}
 
 }
