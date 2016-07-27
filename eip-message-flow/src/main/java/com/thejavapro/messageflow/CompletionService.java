@@ -22,7 +22,7 @@ public class CompletionService {
 	}
 	
 	public void start() {
-		
+		taskManagers.forEach(taskManager -> taskManager.start());
 	}
 	
 	public void shutDown(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException {
