@@ -58,10 +58,12 @@ public class ProcessUnit<I, O> implements IProcessingUnit<I, O> {
 	}
 
 	@Override
-	public void addOutputUnit(IProcessingUnit<O, ?> next) {
+	public IProcessingUnit<O, ?> addOutputUnit(IProcessingUnit<O, ?> next) {
 		
 		this.nextUnit = next;
 		this.outputQueue = next.getInputQueue();
+		
+		return next;
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import com.thejavapro.messageflow.Message;
 import com.thejavapro.messageflow.interfaces.IProcessingTaskFactory;
 import com.thejavapro.messageflow.interfaces.IProcessingUnit;
 import com.thejavapro.messageflow.process.ProcessUnit;
+import com.thejavapro.messageflow.resequence.ResequenceUnit;
 
 public class Main {
 
@@ -17,13 +18,17 @@ public class Main {
 		IProcessingTaskFactory<String, String> task2Factory = new Task2Factory();
 		IProcessingTaskFactory<String, String> task3Factory = new Task3Factory();
 
-		IProcessingUnit<String, ?> v = new ProcessUnit<String, String>(1, task3Factory, 1);
+		IProcessingUnit<String, String> v = new ProcessUnit<String, String>(1, task3Factory, 1);
 		IProcessingUnit<String, String> u1 = new ProcessUnit<String, String>(5, task1Factory, 100);
 		//IProcessingUnit<String, String> u2 = new TransformUnit<String, String>(5, task2Factory, 100, v);
-		u1.addOutputUnit(v);
+		
+		IProcessingUnit<String, String> seq = new ResequenceUnit<String>(1, 5, TimeUnit.SECONDS, 500);
+		
+		u1.addOutputUnit(seq);
+		seq.addOutputUnit(v);
 		
 		CompletionService cs = new CompletionService();
-		cs.add(u1).add(v);
+		cs.add(u1).add(seq).add(v);
 		cs.start();
 		
 		for(int i = 0; i < 10; i++) {

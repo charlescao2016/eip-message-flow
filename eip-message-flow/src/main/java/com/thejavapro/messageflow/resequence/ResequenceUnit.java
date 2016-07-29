@@ -14,9 +14,9 @@ public class ResequenceUnit<I> implements IProcessingUnit<I, I>{
 
 	private IProcessingUnit<I, I> processUnit;
 	
-	public ResequenceUnit(int inputQueueSize) {
+	public ResequenceUnit(int inputQueueSize, long timeout, TimeUnit unit, int maxBufferSzie) {
 		
-		IProcessingTaskFactory<I, I> factory = new ResequenceTaskFactory<I>();
+		IProcessingTaskFactory<I, I> factory = new ResequenceTaskFactory<I>(timeout, unit, maxBufferSzie);
 		processUnit = new ProcessUnit<I, I>(1, factory, inputQueueSize);
 	}
 
@@ -69,9 +69,9 @@ public class ResequenceUnit<I> implements IProcessingUnit<I, I>{
 	}
 
 	@Override
-	public void addOutputUnit(IProcessingUnit<I, ?> next) {
+	public IProcessingUnit<I, ?> addOutputUnit(IProcessingUnit<I, ?> next) {
 
-		processUnit.addOutputUnit(next);
+		return processUnit.addOutputUnit(next);
 	}
 
 	@Override

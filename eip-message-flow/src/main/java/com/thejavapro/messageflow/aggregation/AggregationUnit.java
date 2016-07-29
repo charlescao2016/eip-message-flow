@@ -63,9 +63,9 @@ public class AggregationUnit<I, O> implements IProcessingUnit<I, O> {
 	}
 
 	@Override
-	public void addOutputUnit(IProcessingUnit<O, ?> next) {
+	public IProcessingUnit<O, ?> addOutputUnit(IProcessingUnit<O, ?> next) {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 
 	@Override

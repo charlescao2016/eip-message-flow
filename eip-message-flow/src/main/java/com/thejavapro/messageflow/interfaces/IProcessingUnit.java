@@ -8,6 +8,6 @@ public interface IProcessingUnit<I, O> extends ITaskManager {
 	
 	void put(Message<I> message) throws InterruptedException;
 	void addOutputQueue(BlockingQueue<Message<O>> outputQueue);
-	void addOutputUnit(IProcessingUnit<O, ?> next);
+	IProcessingUnit<O, ?> addOutputUnit(IProcessingUnit<O, ?> next);
 	BlockingQueue<Message<I>> getInputQueue();
 }
