@@ -15,7 +15,7 @@ public class Message<T> {
 	private T body;
 	
 	public static <E> Message<E> CreatePoisonPill() {
-		return new Message<E>("", null, 0, true);
+		return new Message<E>("", null, Long.MAX_VALUE, true);
 	}
 	
 	public Message(String messageID, T body, long sequenceNumber, boolean isPoisonPill) {

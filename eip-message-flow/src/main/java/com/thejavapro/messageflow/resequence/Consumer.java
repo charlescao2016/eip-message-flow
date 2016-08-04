@@ -22,7 +22,6 @@ class Consumer<I> implements Callable<Boolean> {
 		this.inputQueue = inputQueue;
 		this.connector = connector;
 		this.startSequence = startSequence;
-		//this.lock = lock;
 	}
 
 	public void doNotify() {
@@ -54,7 +53,7 @@ class Consumer<I> implements Callable<Boolean> {
 				
 				while(true) {
 					t = inputQueue.peek();
-					if ((t == null || (t.getSequenceNumber() != startSequence) && t.getBody() != null)) {
+					if ((t == null || (t.getSequenceNumber() > startSequence) && !t.isPoisonPill())) {
 						doWait();	
 					} else {
 						break;
@@ -62,7 +61,9 @@ class Consumer<I> implements Callable<Boolean> {
 				}
 				
 				t = inputQueue.take();
-				startSequence++;
+				if (t.getSequenceNumber() == startSequence) {
+					startSequence++;
+				}
 				
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();

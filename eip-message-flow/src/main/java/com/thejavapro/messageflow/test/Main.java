@@ -24,13 +24,13 @@ public class Main {
 		
 		IProcessingUnit<String, String> seq = new ResequenceUnit<String>(5, TimeUnit.SECONDS, 500, 0);
 		
-		u1.addOutputUnit(v);
-		//u1.addOutputUnit(seq);
-		//seq.addOutputUnit(v);
+		//u1.addOutputUnit(v);
+		u1.addOutputUnit(seq);
+		seq.addOutputUnit(v);
 		
 		CompletionService cs = new CompletionService();
-		//cs.add(u1.getITaskManager()).add(seq.getITaskManager()).add(v.getITaskManager());
-		cs.add(u1.getITaskManager()).add(v.getITaskManager());
+		cs.add(u1.getITaskManager()).add(seq.getITaskManager()).add(v.getITaskManager());
+		//cs.add(u1.getITaskManager()).add(v.getITaskManager());
 		cs.start();
 		
 		for(int i = 0; i < 10; i++) {
