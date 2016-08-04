@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import com.thejavapro.messageflow.Message;
 import com.thejavapro.messageflow.TaskManager;
+import com.thejavapro.messageflow.UnitConnector;
 import com.thejavapro.messageflow.interfaces.IProcessingTaskFactory;
 import com.thejavapro.messageflow.interfaces.IProcessingUnit;
 import com.thejavapro.messageflow.interfaces.ITaskManager;
@@ -20,9 +21,7 @@ public class ProcessUnit<I, O> extends TaskManager<O> implements IProcessingUnit
 	private final IProcessingTaskFactory<I, O> taskFactory;
 	private final int consumerSize;
 	private final BlockingQueue<Message<I>> inputQueue;
-	
-	private BlockingQueue<Message<O>> outputQueue = null;
-	private IProcessingUnit<O, ?> nextUnit = null;
+	private UnitConnector<O> connector = new UnitConnector<O>();
 	
 	public ProcessUnit(int consumerSize, IProcessingTaskFactory<I, O> taskFactory, int inputQueueSize) {
 
@@ -33,23 +32,13 @@ public class ProcessUnit<I, O> extends TaskManager<O> implements IProcessingUnit
 
 	@Override
 	public void addOutputQueue(BlockingQueue<Message<O>> outputQueue) {
-		
-		this.outputQueue = outputQueue;
+		connector.setOutputQueue(outputQueue);
 	}
 
 	@Override
 	public IProcessingUnit<O, ?> addOutputUnit(IProcessingUnit<O, ?> next) {
-		
-		this.nextUnit = next;
-		this.outputQueue = next.getInputQueue();
-		
+		connector.setOutputUnit(next);
 		return next;
-	}
-
-	@Override
-	public BlockingQueue<Message<I>> getInputQueue() {
-
-		return inputQueue;
 	}
 
 	@Override
@@ -65,12 +54,12 @@ public class ProcessUnit<I, O> extends TaskManager<O> implements IProcessingUnit
 
 	@Override
 	protected IProcessingUnit<O, ?> getNextUnit() {
-		return nextUnit;
+		return connector.getOutputUnit();
 	}
 
 	@Override
 	protected void addPoisonPill() throws InterruptedException {
-		put(new Message<I>("", null));
+		put(Message.<I>CreatePoisonPill());
 	}
 
 	@Override
@@ -80,6 +69,6 @@ public class ProcessUnit<I, O> extends TaskManager<O> implements IProcessingUnit
 
 	@Override
 	protected Callable<Boolean> createConsumer() {
-		return new Consumer<I, O>(inputQueue, outputQueue, taskFactory);
+		return new Consumer<I, O>(inputQueue, connector, taskFactory);
 	}
 }

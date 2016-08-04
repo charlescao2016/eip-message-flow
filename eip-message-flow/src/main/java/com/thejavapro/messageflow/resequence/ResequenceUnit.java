@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 
 import com.thejavapro.messageflow.Message;
 import com.thejavapro.messageflow.TaskManager;
+import com.thejavapro.messageflow.UnitConnector;
 import com.thejavapro.messageflow.interfaces.IProcessingUnit;
 import com.thejavapro.messageflow.interfaces.ITaskManager;
 
@@ -20,10 +21,8 @@ public class ResequenceUnit<I> extends TaskManager<I> implements IProcessingUnit
 	private final PriorityBlockingQueue<Message<I>> inputQueue;
 	private final long timeout;
 	private final TimeUnit unit;
-	private final int maxBufferSzie;
-	
-	private BlockingQueue<Message<I>> outputQueue = null;
-	private IProcessingUnit<I, ?> nextUnit = null;
+	private final int maxBufferSzie;	
+	private UnitConnector<I> connector = new UnitConnector<I>();
 	private long startSequence;
 	
 	private Consumer<I> consumer;
@@ -41,28 +40,19 @@ public class ResequenceUnit<I> extends TaskManager<I> implements IProcessingUnit
 
 	@Override
 	public void put(Message<I> message) throws InterruptedException {
-
 		inputQueue.put(message);
 		consumer.doNotify();
 	}
 
 	@Override
 	public void addOutputQueue(BlockingQueue<Message<I>> outputQueue) {
-
-		this.outputQueue = outputQueue;
+		connector.setOutputQueue(outputQueue);
 	}
 
 	@Override
 	public IProcessingUnit<I, ?> addOutputUnit(IProcessingUnit<I, ?> next) {
-		this.nextUnit = next;
-		this.outputQueue = next.getInputQueue();
-		
+		connector.setOutputUnit(next);		
 		return next;
-	}
-
-	@Override
-	public BlockingQueue<Message<I>> getInputQueue() {
-		return inputQueue;
 	}
 
 	@Override
@@ -72,12 +62,12 @@ public class ResequenceUnit<I> extends TaskManager<I> implements IProcessingUnit
 
 	@Override
 	protected IProcessingUnit<I, ?> getNextUnit() {
-		return nextUnit;
+		return connector.getOutputUnit();
 	}
 
 	@Override
 	protected void addPoisonPill() throws InterruptedException {
-		put(new Message<I>("", null));
+		put(Message.<I>CreatePoisonPill());
 	}
 
 	@Override
@@ -87,7 +77,7 @@ public class ResequenceUnit<I> extends TaskManager<I> implements IProcessingUnit
 
 	@Override
 	protected Callable<Boolean> createConsumer() {
-		consumer = new Consumer<I>(inputQueue, outputQueue, startSequence);
+		consumer = new Consumer<I>(inputQueue, connector, startSequence);
 		return consumer;
 	}
 

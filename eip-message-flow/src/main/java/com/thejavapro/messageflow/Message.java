@@ -10,18 +10,27 @@ public class Message<T> {
 	private String correlationID = null;
 	private MessageSequence sequence = null;
 	private long sequenceNumber = 0;
+	private boolean isPoisonPill = false;
 	
 	private T body;
 	
-	public Message(String messageID, T body, long sequenceNumber) {
+	public static <E> Message<E> CreatePoisonPill() {
+		return new Message<E>("", null, 0, true);
+	}
+	
+	public Message(String messageID, T body, long sequenceNumber, boolean isPoisonPill) {
 		this.messageID = messageID;
 		this.body = body;
 		this.sequenceNumber = sequenceNumber;
+		this.isPoisonPill = isPoisonPill;
+	}
+
+	public Message(String messageID, T body, long sequenceNumber) {
+		this(messageID, body, sequenceNumber, false);
 	}
 
 	public Message(String messageID, T body) {
-		this.messageID = messageID;
-		this.body = body;
+		this(messageID, body, 0, false);
 	}
 
 	public String getMessageID() {
@@ -54,5 +63,9 @@ public class Message<T> {
 
 	public long getSequenceNumber() {
 		return sequenceNumber;
+	}
+
+	public boolean isPoisonPill() {
+		return isPoisonPill;
 	}
 }

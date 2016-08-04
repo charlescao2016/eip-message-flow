@@ -34,12 +34,6 @@ public class AggregationUnit<I, O> implements IProcessingUnit<I, O> {
 	}
 
 	@Override
-	public BlockingQueue<Message<I>> getInputQueue() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public ITaskManager getITaskManager() {
 		// TODO Auto-generated method stub
 		return null;

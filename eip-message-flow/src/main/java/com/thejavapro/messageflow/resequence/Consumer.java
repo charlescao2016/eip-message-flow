@@ -6,20 +6,21 @@ import java.util.concurrent.Callable;
 import org.apache.log4j.Logger;
 
 import com.thejavapro.messageflow.Message;
+import com.thejavapro.messageflow.UnitConnector;
 
 class Consumer<I> implements Callable<Boolean> {
 
 	private static final Logger LOGGER = Logger.getLogger(Consumer.class);
 
 	private final BlockingQueue<Message<I>> inputQueue;
-	private final BlockingQueue<Message<I>> outputQueue;
+	private final UnitConnector<I> connector;
 	private long startSequence;
 	private Object lock = new Object();
 	boolean signalled = false;
 
-	public Consumer(BlockingQueue<Message<I>> inputQueue, BlockingQueue<Message<I>> outputQueue, long startSequence) {
+	public Consumer(BlockingQueue<Message<I>> inputQueue, UnitConnector<I> connector, long startSequence) {
 		this.inputQueue = inputQueue;
-		this.outputQueue = outputQueue;
+		this.connector = connector;
 		this.startSequence = startSequence;
 		//this.lock = lock;
 	}
@@ -68,14 +69,12 @@ class Consumer<I> implements Callable<Boolean> {
 				return false;
 			}
 
-			if (t.getBody() == null) {
+			if (t.isPoisonPill()) {
 				System.out.println("poison pill.");
 				return true;
 			}
 
-			if (outputQueue != null) {
-				outputQueue.put(t);
-			}
+			connector.put(t);
 		}
 	}
 }

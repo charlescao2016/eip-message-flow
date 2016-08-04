@@ -9,7 +9,5 @@ public interface IProcessingUnit<I, O> {
 	void put(Message<I> message) throws InterruptedException;
 	void addOutputQueue(BlockingQueue<Message<O>> outputQueue);
 	IProcessingUnit<O, ?> addOutputUnit(IProcessingUnit<O, ?> next);
-	BlockingQueue<Message<I>> getInputQueue();
-	
 	ITaskManager getITaskManager();
 }
