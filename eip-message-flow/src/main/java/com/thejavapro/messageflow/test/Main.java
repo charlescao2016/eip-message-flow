@@ -22,19 +22,20 @@ public class Main {
 		IProcessingUnit<String, String> u1 = new ProcessUnit<String, String>(5, task1Factory, 100);
 		//IProcessingUnit<String, String> u2 = new TransformUnit<String, String>(5, task2Factory, 100, v);
 		
-		//IProcessingUnit<String, String> seq = new ResequenceUnit<String>(1, 5, TimeUnit.SECONDS, 500);
+		IProcessingUnit<String, String> seq = new ResequenceUnit<String>(5, TimeUnit.SECONDS, 500, 0);
 		
 		u1.addOutputUnit(v);
+		//u1.addOutputUnit(seq);
 		//seq.addOutputUnit(v);
 		
 		CompletionService cs = new CompletionService();
-		//cs.add(u1).add(seq).add(v);
+		//cs.add(u1.getITaskManager()).add(seq.getITaskManager()).add(v.getITaskManager());
 		cs.add(u1.getITaskManager()).add(v.getITaskManager());
 		cs.start();
 		
 		for(int i = 0; i < 10; i++) {
 			try {
-				Message<String> m1 = new Message<String>("" + i, "message_u-" + i);
+				Message<String> m1 = new Message<String>("" + i, "message_u-" + i, i);
 				u1.put(m1);
 				
 				//Message<String> m2 = new Message<String>("" + i, "message_v-" + i);

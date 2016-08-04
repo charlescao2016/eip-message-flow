@@ -1,5 +1,6 @@
 package com.thejavapro.messageflow.resequence;
 
+import java.util.Comparator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -23,21 +24,26 @@ public class ResequenceUnit<I> extends TaskManager<I> implements IProcessingUnit
 	
 	private BlockingQueue<Message<I>> outputQueue = null;
 	private IProcessingUnit<I, ?> nextUnit = null;
-
+	private long startSequence;
 	
-	public ResequenceUnit(long timeout, TimeUnit unit, int maxBufferSzie) {
+	private Consumer<I> consumer;
+	
+	public ResequenceUnit(long timeout, TimeUnit unit, int maxBufferSzie, long startSequence) {
 		
 		this.timeout = timeout;
 		this.unit = unit;
 		this.maxBufferSzie = maxBufferSzie;
+		this.startSequence = startSequence;
 		
-		this.inputQueue = new PriorityBlockingQueue<Message<I>>();
+		Comparator<Message<I>> comparator = new MessageComparator<I>(); 
+		this.inputQueue = new PriorityBlockingQueue<Message<I>>(maxBufferSzie, comparator);
 	}
 
 	@Override
 	public void put(Message<I> message) throws InterruptedException {
 
 		inputQueue.put(message);
+		consumer.doNotify();
 	}
 
 	@Override
@@ -56,8 +62,7 @@ public class ResequenceUnit<I> extends TaskManager<I> implements IProcessingUnit
 
 	@Override
 	public BlockingQueue<Message<I>> getInputQueue() {
-		// TODO Auto-generated method stub
-		return null;
+		return inputQueue;
 	}
 
 	@Override
@@ -82,7 +87,8 @@ public class ResequenceUnit<I> extends TaskManager<I> implements IProcessingUnit
 
 	@Override
 	protected Callable<Boolean> createConsumer() {
-		return new Consumer<I>(inputQueue, outputQueue);
+		consumer = new Consumer<I>(inputQueue, outputQueue, startSequence);
+		return consumer;
 	}
 
 
