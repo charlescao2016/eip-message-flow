@@ -44,7 +44,7 @@ class Consumer<I, O> implements Callable<Boolean> {
 			}
 			
 			if (t.isPoisonPill()) {
-				System.out.println("poison pill.");
+				LOGGER.debug("poison pill.");
 				return true;
 			}
 			

@@ -3,26 +3,38 @@ package com.thejavapro.messageflow.test;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
+
 import com.thejavapro.messageflow.CompletionService;
 import com.thejavapro.messageflow.Message;
 import com.thejavapro.messageflow.interfaces.IProcessingTaskFactory;
 import com.thejavapro.messageflow.interfaces.IProcessingUnit;
 import com.thejavapro.messageflow.process.ProcessUnit;
 import com.thejavapro.messageflow.resequence.ResequenceUnit;
+import com.thejavapro.messageflow.timer.CountdownTimer;
 
 public class Main {
 
+	private static final Logger LOGGER = Logger.getLogger(Main.class);
+			
 	public static void main(String[] args) {
+		
+		CountdownTimer t = new CountdownTimer(8, 1000);
+		t.startCountdown();
+		
+		DOMConfigurator.configure("src/main/resources/log4j.xml");
+		LOGGER.info("start ...");
 		
 		IProcessingTaskFactory<String, String> task1Factory = new Task1Factory();
 		IProcessingTaskFactory<String, String> task2Factory = new Task2Factory();
 		IProcessingTaskFactory<String, String> task3Factory = new Task3Factory();
 
 		IProcessingUnit<String, String> v = new ProcessUnit<String, String>(1, task3Factory, 1);
-		IProcessingUnit<String, String> u1 = new ProcessUnit<String, String>(5, task1Factory, 100);
+		IProcessingUnit<String, String> u1 = new ProcessUnit<String, String>(50, task1Factory, 100);
 		//IProcessingUnit<String, String> u2 = new TransformUnit<String, String>(5, task2Factory, 100, v);
 		
-		IProcessingUnit<String, String> seq = new ResequenceUnit<String>(5, TimeUnit.SECONDS, 500, 0);
+		IProcessingUnit<String, String> seq = new ResequenceUnit<String>(2, TimeUnit.SECONDS, 8, 0);
 		
 		//u1.addOutputUnit(v);
 		u1.addOutputUnit(seq);

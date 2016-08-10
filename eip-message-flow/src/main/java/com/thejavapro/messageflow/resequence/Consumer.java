@@ -5,6 +5,7 @@ import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
+import com.thejavapro.messageflow.EventMonitor;
 import com.thejavapro.messageflow.Message;
 import com.thejavapro.messageflow.UnitConnector;
 
@@ -15,46 +16,25 @@ class Consumer<I> implements Callable<Boolean> {
 	private final BlockingQueue<Message<I>> inputQueue;
 	private final UnitConnector<I> connector;
 	private long startSequence;
-	private Object lock = new Object();
-	boolean signalled = false;
-
-	public Consumer(BlockingQueue<Message<I>> inputQueue, UnitConnector<I> connector, long startSequence) {
+	private EventMonitor inputMonitor;
+	
+	public Consumer(BlockingQueue<Message<I>> inputQueue, UnitConnector<I> connector, long startSequence, EventMonitor inputMonitor) {
 		this.inputQueue = inputQueue;
 		this.connector = connector;
 		this.startSequence = startSequence;
-	}
-
-	public void doNotify() {
-		
-		synchronized (lock) {
-			signalled = true;
-			lock.notify();
-		}
-	}
-
-	private void doWait() throws InterruptedException {
-
-		synchronized (lock) {
-			while (!signalled) {
-				lock.wait();
-			}
-			// clear signal and continue running.
-			signalled = false;
-		}
+		this.inputMonitor = inputMonitor;
 	}
 
 	@Override
 	public Boolean call() throws Exception {
 
 		while (true) {
-
 			Message<I> t;
 			try {
-				
 				while(true) {
 					t = inputQueue.peek();
 					if ((t == null || (t.getSequenceNumber() > startSequence) && !t.isPoisonPill())) {
-						doWait();	
+						inputMonitor.doWait();	
 					} else {
 						break;
 					}
@@ -63,6 +43,8 @@ class Consumer<I> implements Callable<Boolean> {
 				t = inputQueue.take();
 				if (t.getSequenceNumber() == startSequence) {
 					startSequence++;
+				} else if (t.getSequenceNumber() > startSequence) {
+					startSequence = t.getSequenceNumber() + 1; 
 				}
 				
 			} catch (InterruptedException e) {
@@ -71,7 +53,7 @@ class Consumer<I> implements Callable<Boolean> {
 			}
 
 			if (t.isPoisonPill()) {
-				System.out.println("poison pill.");
+				LOGGER.debug("poison pill.");
 				return true;
 			}
 

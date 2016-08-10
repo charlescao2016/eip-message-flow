@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
+import com.thejavapro.messageflow.BoundedPriorityBlockingQueue;
+import com.thejavapro.messageflow.EventMonitor;
 import com.thejavapro.messageflow.Message;
 import com.thejavapro.messageflow.TaskManager;
 import com.thejavapro.messageflow.UnitConnector;
@@ -18,14 +20,13 @@ public class ResequenceUnit<I> extends TaskManager<I> implements IProcessingUnit
 
 	private static final Logger LOGGER = Logger.getLogger(ResequenceUnit.class);
 			
-	private final PriorityBlockingQueue<Message<I>> inputQueue;
+	private final BlockingQueue<Message<I>> inputQueue;
 	private final long timeout;
 	private final TimeUnit unit;
 	private final int maxBufferSzie;	
 	private UnitConnector<I> connector = new UnitConnector<I>();
 	private long startSequence;
-	
-	private Consumer<I> consumer;
+	private EventMonitor inputMonitor = new EventMonitor();
 	
 	public ResequenceUnit(long timeout, TimeUnit unit, int maxBufferSzie, long startSequence) {
 		
@@ -35,13 +36,14 @@ public class ResequenceUnit<I> extends TaskManager<I> implements IProcessingUnit
 		this.startSequence = startSequence;
 		
 		Comparator<Message<I>> comparator = new MessageComparator<I>(); 
-		this.inputQueue = new PriorityBlockingQueue<Message<I>>(maxBufferSzie, comparator);
+		//this.inputQueue = new PriorityBlockingQueue<Message<I>>(maxBufferSzie, comparator);
+		this.inputQueue = new BoundedPriorityBlockingQueue<Message<I>>(maxBufferSzie, comparator);
 	}
 
 	@Override
 	public void put(Message<I> message) throws InterruptedException {
 		inputQueue.put(message);
-		consumer.doNotify();
+		inputMonitor.doNotify();
 	}
 
 	@Override
@@ -77,8 +79,7 @@ public class ResequenceUnit<I> extends TaskManager<I> implements IProcessingUnit
 
 	@Override
 	protected Callable<Boolean> createConsumer() {
-		consumer = new Consumer<I>(inputQueue, connector, startSequence);
-		return consumer;
+		return new Consumer<I>(inputQueue, connector, startSequence, inputMonitor);
 	}
 
 
