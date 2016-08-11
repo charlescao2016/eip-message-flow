@@ -10,7 +10,7 @@ public class Task3 implements IProcessingTask<String, String> {
 		long threadId = Thread.currentThread().getId();
 
 		String body = t.getBody();
-		System.out.println("Thread # " + threadId + " - Task3 start: " + t.getBody());
+		//System.out.println("Thread # " + threadId + " - Task3 start: " + t.getBody());
 
 		try {
 			Thread.sleep(1000 * 1);

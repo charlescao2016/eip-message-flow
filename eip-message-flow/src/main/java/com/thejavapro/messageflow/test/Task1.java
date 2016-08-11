@@ -10,10 +10,10 @@ public class Task1 implements IProcessingTask<String, String> {
 		long threadId = Thread.currentThread().getId();
 		
 		String body = t.getBody();
-		System.out.println("Thread # " + threadId + " - Task1 start: " + t.getBody());
+		//System.out.println("Thread # " + threadId + " - Task1 start: " + t.getBody());
 		
 		try {
-			Thread.sleep(1000 * 5);
+			Thread.sleep(1000 * 6);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -22,7 +22,7 @@ public class Task1 implements IProcessingTask<String, String> {
 		
 		
 		t.setBody(body + "-task1");
-		System.out.println("Thread # " + threadId + " - Task1 done: " + t.getBody());
+		//System.out.println("Thread # " + threadId + " - Task1 done: " + t.getBody());
 		
 		return t;
 	}

@@ -10,7 +10,7 @@ public class CountdownTimer {
 	
 	public CountdownTimer(int count, long periodMilliSec) {
 		this.periodMilliSec = periodMilliSec;
-		this.task = new EmptyTask(count, timer);
+		this.task = new EmptyTask(count);
 	}
 	
 	public void startCountdown() {		
@@ -18,6 +18,10 @@ public class CountdownTimer {
 	}
 	
 	public int getCurrentcount() {
-		return task.getCurrentCount();
+		return task.getCurrentCounter();
+	}
+	
+	public void resetCounter(int count) {
+		task.setCounter(count);
 	}
 }

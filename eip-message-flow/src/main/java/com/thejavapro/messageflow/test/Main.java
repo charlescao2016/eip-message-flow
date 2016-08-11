@@ -20,8 +20,8 @@ public class Main {
 			
 	public static void main(String[] args) {
 		
-		CountdownTimer t = new CountdownTimer(8, 1000);
-		t.startCountdown();
+		//CountdownTimer t = new CountdownTimer(8, 1000);
+		//t.startCountdown();
 		
 		DOMConfigurator.configure("src/main/resources/log4j.xml");
 		LOGGER.info("start ...");
@@ -34,7 +34,7 @@ public class Main {
 		IProcessingUnit<String, String> u1 = new ProcessUnit<String, String>(50, task1Factory, 100);
 		//IProcessingUnit<String, String> u2 = new TransformUnit<String, String>(5, task2Factory, 100, v);
 		
-		IProcessingUnit<String, String> seq = new ResequenceUnit<String>(2, TimeUnit.SECONDS, 8, 0);
+		IProcessingUnit<String, String> seq = new ResequenceUnit<String>(2, TimeUnit.SECONDS, 2, 0);
 		
 		//u1.addOutputUnit(v);
 		u1.addOutputUnit(seq);

@@ -9,8 +9,12 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+
 public class BoundedPriorityBlockingQueue<E> implements Serializable, Iterable<E>, Collection<E>, BlockingQueue<E>, Queue<E> {
 
+	private static final Logger LOGGER = Logger.getLogger(BoundedPriorityBlockingQueue.class);
+	
 	/**
 	 * 
 	 */
