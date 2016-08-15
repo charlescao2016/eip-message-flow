@@ -11,6 +11,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
+import com.thejavapro.messageflow.concurrent.EventMonitor;
+
 public class BoundedPriorityBlockingQueue<E> implements Serializable, Iterable<E>, Collection<E>, BlockingQueue<E>, Queue<E> {
 
 	private static final Logger LOGGER = Logger.getLogger(BoundedPriorityBlockingQueue.class);
@@ -20,11 +22,12 @@ public class BoundedPriorityBlockingQueue<E> implements Serializable, Iterable<E
 	 */
 	private static final long serialVersionUID = 1L;
 	private PriorityBlockingQueue<E> queue; 
-	private EventMonitor maxBuffeSizerMonitor = new EventMonitor();
+	private EventMonitor maxBuffeSizerMonitor;
 	private final int maxBufferSzie;
 	
 	public BoundedPriorityBlockingQueue(int maxBufferSzie, Comparator<? super E> comparator) {
 		queue = new PriorityBlockingQueue<E>(maxBufferSzie, comparator);
+		maxBuffeSizerMonitor = EventMonitor.Add("com.thejavapro.messageflow.BoundedPriorityBlockingQueue", false, 50, 100);
 		this.maxBufferSzie = maxBufferSzie;
 	}
 	
@@ -197,4 +200,7 @@ public class BoundedPriorityBlockingQueue<E> implements Serializable, Iterable<E
 		return queue.iterator();
 	}
 
+	public EventMonitor getMaxBuffeSizerMonitor() {
+		return maxBuffeSizerMonitor;
+	}
 }

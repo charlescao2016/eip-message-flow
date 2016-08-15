@@ -21,7 +21,7 @@ public class Task3 implements IProcessingTask<String, String> {
 		}
 
 		t.setBody(body + "-task3");
-		System.out.println("Thread # " + threadId + " - Task3 done: " + t.getBody());
+		//System.out.println("Thread # " + threadId + " - Task3 done: " + t.getBody());
 
 		return null;
 	}
